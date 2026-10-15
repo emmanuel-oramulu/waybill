@@ -51,7 +51,7 @@ class LinkService {
 	}
 
 	async deactivate(code: string) {
-			await linkRepository.deactivationTransaction(code);
+		await linkRepository.deactivationTransaction(code);
 	}
 };
 

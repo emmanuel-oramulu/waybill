@@ -7,7 +7,13 @@ class LinkController {
 	async shorten(req: Request,res: Response) {
 		const { url }=req.body as { url: string };
 		const code=await linkService.create(url);
-		res.status(201).json({ code,short: `${BASE_URL}/${code}` });
+		res.status(201).json({
+			success: true,
+			data: {
+				code,
+				short: `${BASE_URL}/${code}`,
+			}
+		});
 	}
 
 	async redirect(req: Request,res: Response) {

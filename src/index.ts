@@ -1,23 +1,23 @@
-import "dotenv/config";
 import cors from "cors";
 import helmet from "helmet";
 import process from "node:process";
 import express,{ type Express } from "express";
 import db from "@/db";
+import corsOptions from "@/config/cors.js";
 import { connectCache,closeCache } from "@/lib/cache.js";
 import errorHandler from "@/middleware/errorHandler.js";
 import notFound from "@/middleware/notFound.js";
-import linkRoutes from "@/routes/link.route.js";
+import mountRoutes from "@/routes";
 import { startOutboxWorker,stopOutboxWorker } from "@/workers/cacheOutbox.worker.js";
 
 const app: Express=express();
 
 app.use(helmet());
-app.use(cors());
+app.use(cors(corsOptions));
 
-app.use(express.json());
+app.use(express.json({limit: "100kb"}));
 
-app.use(linkRoutes);
+mountRoutes(app);
 
 app.use(notFound);
 app.use(errorHandler);
@@ -47,11 +47,10 @@ async function boot() {
 
 			setTimeout(() => process.exit(1),10_000).unref();
 
+			await stopOutboxWorker();
 			await new Promise<void>(
 				(resolve) => server.close(() => resolve())
 			);
-
-			stopOutboxWorker();
 			await db.close();
 			await closeCache();
 			process.exit(0);
